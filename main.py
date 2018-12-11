@@ -30,9 +30,10 @@ parser.add_argument("-loadpath",
                     type=str,
                     default='',
                     help="path to the previous exp to load parameters from")
-parser.add_argument("-loaditer",
+parser.add_argument("-loadepoch",
                     type=int,
-                    help="iteration number to load from")
+                    default=None,
+                    help="epoch number to load from")
 parser.add_argument("-classifier_path", type=str,
                     default="classifier.pkl",
                     help="path to classifier parameters. "
@@ -66,7 +67,7 @@ parser.add_argument("-qtype", type=int, default=1,
 parser.add_argument("-tsize", type=int, default=[64, 64], nargs="+",
                     help="hidden size of Transition NN.")
 parser.add_argument("-k", type=int, default=1,
-                    help="which dataset configurations to choose from: -3 to +inf.")
+                    help="the number of timesteps apart for training")
 parser.add_argument("-color", action="store_true")
 parser.add_argument("-learn_mu", action="store_true")
 parser.add_argument("-learn_var", action="store_true")
@@ -88,12 +89,12 @@ kwargs = vars(args)
 if args.prefix is None:
     str_list = ["continuous",
                 "gtype", str(args.gtype),
-                "rn", str(args.rn),
-                "cc", str(args.cc),
+                "rn", str(args.random_noise_dim),
+                "cc", str(args.cont_code_dim),
                 "infow", "%.2f" % args.infow,
                 "transw", "%.2f" % args.transw,
                 ]
-    if args.planning_horizon > 0 and os.path.exists(args.planning_data_dir) and args.planner:
+    if args.plan_length > 0 and os.path.exists(args.planning_data_dir) and args.planner:
         str_list.append(args.planner)
     if args.fcnpath:
         str_list.append("fcn")
@@ -120,7 +121,7 @@ torch.backends.cudnn.deterministic = True
 
 # Make output folders
 out_dir = kwargs['out_dir']
-for folder in ['gen', 'real-and-est', 'plans']:
+for folder in ['gen', 'real', 'plans']:
     if not os.path.exists(os.path.join(out_dir, folder)):
         os.makedirs(os.path.join(out_dir, folder))
 
@@ -143,7 +144,7 @@ t = GaussianTransition(c_dim,
                        learn_mu=kwargs['learn_mu'])
 p = UniformDistribution(kwargs['cont_code_dim'])
 var_list = [g, d, q, t, p]
-
+kwargs['classifier'] = get_causal_classifier(kwargs['classifier_path'], default=d)
 if kwargs['fcnpath']:
     fcn_model = FCN_mse(n_class=2).cuda()
     fcn_model.load_state_dict(torch.load(os.path.join(kwargs['fcnpath'])))
@@ -152,20 +153,20 @@ if kwargs['fcnpath']:
 
 # Initialize or load from previously trained networks
 loadpath = kwargs['loadpath']
-loaditer = kwargs['loaditer']
+loadepoch = kwargs['loadepoch']
 for i in var_list:
     print(i)
     i.cuda()
     i.apply(weights_init)
-    if loadpath is not None:
+    if loadpath:
         if i not in [p]:
             try:
                 i.load_state_dict(torch.load(os.path.join(loadpath,
                                                           'var',
                                                           '%s_%d' % (i.__class__.__name__,
-                                                                     loaditer))))
+                                                                     loadepoch))))
                 print("Loaded var %s from iter %d." % (i.__class__.__name__,
-                                                       loaditer))
+                                                       loadepoch))
             except FileNotFoundError as e:
                 print("Couldn't load var %s" % i.__class__.__name__)
                 pass

@@ -2,11 +2,10 @@ import torch
 import matplotlib.colors as colors
 import numpy as np
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from torch.autograd.variable import Variable
-
-matplotlib.use('Agg')
 
 
 def from_numpy_to_var(npx, dtype='float32'):

@@ -70,10 +70,10 @@ class D(nn.Module):
         else:
             raise NotImplementedError("dtype %d has not been implemented." % dtype)
 
-    def forward(self, x, x_next):
+    def forward(self, o, o_next):
         if self.dtype == 1:
-            inp = torch.cat([x, x_next], dim=1)
-            return self.main(inp)
+            x = torch.cat([o, o_next], dim=1)
+            return self.main(x)
         else:
             raise NotImplementedError("dtype %d has not been implemented." % self.dtype)
 
@@ -177,7 +177,7 @@ class G(nn.Module):
 
         if gtype == 1:
             self.main = nn.Sequential(
-                nn.ConvTranspose2d(z_dim + 2 * c_dim, 512, 4, 1, bias=False),
+                nn.ConvTranspose2d(self.latent_dim, 512, 4, 1, bias=False),
                 nn.BatchNorm2d(512),
                 nn.ReLU(True),
                 nn.ConvTranspose2d(512, 256, 4, 2, 1, bias=False),
@@ -196,8 +196,9 @@ class G(nn.Module):
             raise NotImplementedError("gtype %d has not been implemented." % self.gtype)
 
     def forward(self, z, c, c_next):
+        x = torch.cat([z, c, c_next], dim=1).view(-1, self.latent_dim, 1, 1)
         if self.gtype == 1:
-            output = self.main(input)
+            output = self.main(x)
             return output[:, :self.channel_dim, :, :], output[:, self.channel_dim:, :, :]
         else:
             raise NotImplementedError("gtype %d has not been implemented." % self.gtype)
@@ -233,7 +234,7 @@ class GaussianTransition(nn.Module):
         if self.output_dim > 0:
             out = self.main(s)
         mu = s + F.tanh(out[:, :self.s_dim]) * 0.1 if self.learn_mu else s
-        var = out[:, -self.s_dim:].exp() if self.learn_var else from_numpy_to_var(np.array([self.default_var]))
+        var = out[:, -self.s_dim:].exp() if self.learn_var else torch.ones_like(s)*self.default_var
         return mu, var
 
     def forward(self, s, a=None):
