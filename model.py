@@ -1,3 +1,5 @@
+import dill
+import os.path
 import numpy as np
 import torch
 import torch.nn as nn
@@ -267,6 +269,45 @@ class UniformDistribution(nn.Module):
         return log_prob
 
 
+class Flatten(nn.Module):
+    def forward(self, x):
+        return x.view(x.size()[0], -1)
+
+
+class Classifier(nn.Module):
+    """
+    Classifier is trained to predict the score between two black/white rope images.
+    The score is high if they are within a few steps apart, and low other wise.
+    """
+    def __init__(self):
+        super(Classifier, self).__init__()
+        self.LeNet = nn.Sequential(
+            # input size 2 x 64 x 64. Take 2 black and white images.
+            nn.Conv2d(2, 64, 4, 2, 1),
+            nn.LeakyReLU(0.1, inplace=True),
+            # 64 x 32 x 32
+            nn.Conv2d(64, 128, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(0.1, inplace=True),
+            # 128 x 16 x 16
+            nn.Conv2d(128, 256, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(0.1, inplace=True),
+            # Option 1: 256 x 8 x 8
+            nn.Conv2d(256, 512, 4, 2, 1, bias=False),
+            nn.BatchNorm2d(512),
+            nn.LeakyReLU(0.1, inplace=True),
+            # 512 x 4 x 4
+            nn.Conv2d(512, 1, 4),
+            Flatten(),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x1, x2):
+        stacked = torch.cat([x1, x2], dim=1)
+        return self.LeNet(stacked)
+
+
 def weights_init(m):
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
@@ -274,3 +315,17 @@ def weights_init(m):
     elif classname.find('BatchNorm') != -1:
         m.weight.data.normal_(1.0, 0.02)
         m.bias.data.fill_(0)
+
+
+def get_causal_classifier(path, default):
+    """
+    loads the weights saved in numpy (by ml_logger). This code is device independent, much better than the native
+    state_dict objects. -- Ge
+    """
+    if not os.path.exists(path):
+        return default
+    with open(path, 'rb') as f:
+        weights = dill.load(f)
+    classifier = Classifier().cuda()
+    classifier.load_state_dict({k: torch.FloatTensor(v) for k, v in weights[0].items()})
+    return classifier

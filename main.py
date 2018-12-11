@@ -1,7 +1,5 @@
-import numpy as np
 import sys
 import argparse
-import os
 from model import *
 from trainer import Trainer
 
