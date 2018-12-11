@@ -22,5 +22,7 @@ In this repo, we provide the code to imagine rope manipulation from random explo
 ## Notes
 1) The training is configured to run on a GPU. One can run on a CPU by removing `.cuda()`.
 
+## Reference
 [1] Kurutach, Thanard, Aviv Tamar, Ge Yang, Stuart J. Russell, and Pieter Abbeel. "Learning plannable representations with causal infogan." In Advances in Neural Information Processing Systems, pp. 8746-8757. 2018.
+
 [2] Nair, Ashvin, Dian Chen, Pulkit Agrawal, Phillip Isola, Pieter Abbeel, Jitendra Malik, and Sergey Levine. "Combining self-supervised learning and imitation for vision-based rope manipulation." In Robotics and Automation (ICRA), 2017 IEEE International Conference on, pp. 2146-2153. IEEE, 2017.
