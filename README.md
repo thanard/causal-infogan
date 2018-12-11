@@ -8,8 +8,8 @@ In this repo, we provide the code to imagine rope manipulation from random explo
 
 ## Setup
 **1) Datasets**
-- Download rope dataset [2] ([rope_full](https://drive.google.com/uc?export=download&confirm=ypZ7&id=10xovkLQ09BDvhtpD_nqXWFX-rlNzMVl9)
-- Download test start and goal images ([seq_data_2](https://drive.google.com/file/d/1n8Yw1fQ2tzvWMWYvTpzzNANWgUVI5Vsl/view?usp=sharing)
+- Download rope dataset [2] ([rope_full](https://drive.google.com/uc?export=download&confirm=ypZ7&id=10xovkLQ09BDvhtpD_nqXWFX-rlNzMVl9))
+- Download test start and goal images ([seq_data_2](https://drive.google.com/file/d/1n8Yw1fQ2tzvWMWYvTpzzNANWgUVI5Vsl/view?usp=sharing))
 - Download the parameters of a fully connected network that is trained to extract the rope from the background ([FCN_mse](https://drive.google.com/file/d/1VGV_QYh24mQH-XVnJYuXRnijWPdu2ojD/view?usp=sharing))
 
 **2) Install the python environment**
@@ -22,7 +22,7 @@ In this repo, we provide the code to imagine rope manipulation from random explo
 ## Notes
 1) The training is configured to run on a GPU. One can run on a CPU by removing `.cuda()`.
 
-## Reference
+## References
 [1] Kurutach, Thanard, Aviv Tamar, Ge Yang, Stuart J. Russell, and Pieter Abbeel. "Learning plannable representations with causal infogan." In Advances in Neural Information Processing Systems, pp. 8746-8757. 2018.
 
 [2] Nair, Ashvin, Dian Chen, Pulkit Agrawal, Phillip Isola, Pieter Abbeel, Jitendra Malik, and Sergey Levine. "Combining self-supervised learning and imitation for vision-based rope manipulation." In Robotics and Automation (ICRA), 2017 IEEE International Conference on, pp. 2146-2153. IEEE, 2017.
