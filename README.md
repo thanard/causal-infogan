@@ -19,6 +19,8 @@ In this repo, we provide the code to imagine rope manipulation from random explo
 **3) Run the training**
 - Run `python main.py -learn_var -seed 2`
 
+![alt text](https://github.com/thanard/causal-infogan/causal_infogan.png)
+
 ## Notes
 1) The training is configured to run on a GPU. One can run on a CPU by removing `.cuda()`.
 2) We found that some random seeds can collapse early. We are curious to see how techniques in improving GAN stability and mode collapsing be applied here.
