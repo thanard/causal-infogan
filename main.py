@@ -48,7 +48,7 @@ parser.add_argument("-n_epochs", type=int, default=100)
 parser.add_argument("-cc", type=int, default=7,
                     dest="cont_code_dim",
                     help="continuous code dimension")
-parser.add_argument("-rn", type=int, default=4,
+parser.add_argument("-rn", type=int, default=2,
                     dest="random_noise_dim",
                     help="dimension of random noise")
 parser.add_argument("-infow", type=float, default=0.1,

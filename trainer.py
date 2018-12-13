@@ -752,7 +752,6 @@ class Trainer:
         """
         with torch.no_grad():
             rollout = []
-            half_z = int(self.rand_z_dim / 2)
             _z = Variable(torch.randn(c_start.size()[0], self.rand_z_dim)).cuda()
             for t in range(self.plan_length):
                 c = c_start + (c_goal - c_start) * t / self.plan_length
@@ -762,20 +761,7 @@ class Trainer:
                 _cur_img, _next_img = self.G(_z, c, c_next)
                 if t == 0:
                     rollout.append(_cur_img)
-                if self.G.gtype == 70:
-                    # Gtype 70 only
-                    next_img = self.G.conditional_g(rollout[-1], torch.cat([_z[:, half_z:], c_next], 1))
-                elif self.G.gtype == 71:
-                    next_img = self.G.conditional_g(rollout[-1], torch.cat([_z[:, half_z:], c_next - c], 1))
-                elif self.G.gtype == 6:
-                    next_img = _next_img
-                elif self.G.gtype == 92:
-                    if t > 0:
-                        assert torch.equal(_cur_img, rollout[-1])
-                    next_img = _next_img
-                else:
-                    raise AssertionError("The code should never have got here.")
-
+                next_img = _next_img
                 rollout.append(next_img)
                 if verbose:
                     # import ipdb; ipdb.set_trace()
@@ -787,7 +773,6 @@ class Trainer:
     def astar_plan(self, c_start, c_goal, verbose=True, **kwargs):
         with torch.no_grad():
             rollout = []
-            half_z = int(self.rand_z_dim / 2)
             # _z = Variable(torch.randn(c_start.size()[0], self.rand_z_dim)).cuda()
             bs = c_start.size()[0]
             traj = plan_traj_astar(
@@ -810,20 +795,7 @@ class Trainer:
                 _cur_img, _next_img = self.G(_z, c, c_next)
                 if t == 0:
                     rollout.append(_cur_img)
-                if self.G.gtype == 70:
-                    # Gtype 70 only
-                    next_img = self.G.conditional_g(rollout[-1], torch.cat([_z[:, half_z:], c_next], 1))
-                elif self.G.gtype == 71:
-                    next_img = self.G.conditional_g(rollout[-1], torch.cat([_z[:, half_z:], c_next - c], 1))
-                elif self.G.gtype == 6:
-                    next_img = _next_img
-                elif self.G.gtype == 92:
-                    if t > 0:
-                        assert torch.equal(_cur_img, rollout[-1])
-                    next_img = _next_img
-                else:
-                    raise AssertionError("The code should never have got here.")
-
+                next_img = _next_img
                 rollout.append(next_img)
                 if verbose:
                     # import ipdb; ipdb.set_trace()

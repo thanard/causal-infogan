@@ -2,7 +2,7 @@
 
 [Paper](https://arxiv.org/abs/1807.09341)
 
-Causal InfoGAN (CIGAN) takes sequential observations as input, defining what is possible in the system, e.g., a piece of rope can move slightly but cannot be broken in half. It learns a latent state transition $P(s'|s)$ that is simple to plan with. A feasible plan in the latent space generates a visual plan to bring the start configuration to the goal configuration.
+Causal InfoGAN (CIGAN) takes sequential observations as input, defining what is possible in the system, e.g., a piece of rope can move slightly but cannot be broken in half. It learns a latent state transition P(s'|s) that is simple to plan with. A feasible plan in the latent space generates a visual plan to bring the start configuration to the goal configuration.
 
 In this repo, we provide the code to imagine rope manipulation from random exploration data. The latent space is continuous with locally Gaussian state transition. Therefore, linear interpolation can generate a feasible plan. Note that as described in the paper [1] one can use different representations and planning algorithms in the latent space.
 
@@ -17,12 +17,14 @@ In this repo, we provide the code to imagine rope manipulation from random explo
 - Activate the environment: `source activate tf14`
 
 **3) Run the training**
-- Run `python main.py -learn_var`
+- Run `python main.py -learn_var -seed 2`
 
 ## Notes
 1) The training is configured to run on a GPU. One can run on a CPU by removing `.cuda()`.
+2) I am curious to see how improvement in GAN stability and mode collapsing be applied here.
+> Because we search for the closest L2 distance on the image space to embed the start and goal images using the generator, more diversity will improve the embeddings of starts and goals.
 
 ## References
-[1] Kurutach, Thanard, Aviv Tamar, Ge Yang, Stuart J. Russell, and Pieter Abbeel. "Learning plannable representations with causal infogan." In Advances in Neural Information Processing Systems, pp. 8746-8757. 2018.
+[1] Thanard Kurutach, Aviv Tamar, Ge Yang, Stuart J. Russell, and Pieter Abbeel. "Learning plannable representations with causal infogan." In Advances in Neural Information Processing Systems, pp. 8746-8757. 2018.
 
-[2] Nair, Ashvin, Dian Chen, Pulkit Agrawal, Phillip Isola, Pieter Abbeel, Jitendra Malik, and Sergey Levine. "Combining self-supervised learning and imitation for vision-based rope manipulation." In Robotics and Automation (ICRA), 2017 IEEE International Conference on, pp. 2146-2153. IEEE, 2017.
+[2] Ashvin Nair, Dian Chen, Pulkit Agrawal, Phillip Isola, Pieter Abbeel, Jitendra Malik, and Sergey Levine. "Combining self-supervised learning and imitation for vision-based rope manipulation." In Robotics and Automation (ICRA), 2017 IEEE International Conference on, pp. 2146-2153. IEEE, 2017.
