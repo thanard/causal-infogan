@@ -22,7 +22,7 @@ In this repo, we provide the code to imagine rope manipulation from random explo
 ## Notes
 1) The training is configured to run on a GPU. One can run on a CPU by removing `.cuda()`.
 2) We found that some random seeds can collapse early. We are curious to see how techniques in improving GAN stability and mode collapsing be applied here.
-> Because we search for the closest L2 distance on the image space to embed the start and goal images using the generator, more diversity in generation will improve the embeddings of starts and goals.
+  > Because we search for the closest L2 distance on the image space to embed the start and goal images using the generator, more diversity in generation will improve the embeddings of starts and goals.
 
 ## References
 [1] Thanard Kurutach, Aviv Tamar, Ge Yang, Stuart J. Russell, and Pieter Abbeel. "Learning plannable representations with causal infogan." In Advances in Neural Information Processing Systems, pp. 8746-8757. 2018.
