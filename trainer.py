@@ -110,10 +110,6 @@ class Trainer:
                  vrange=self.P.unif_range)
         return c_next.repeat(1, 1, self.test_sample_size).permute(2, 0, 1).contiguous().view(-1, self.c_dim)
 
-    def apply_fcn(self, img):
-        assert self.fcn
-        return torch.sign(F.softmax(self.fcn(Variable(img).cuda()))[:, 0, None, :, :].detach() - 0.5)
-
     def apply_fcn_mse(self, img):
         o = self.fcn(Variable(img).cuda()).detach()
         return torch.clamp(2 * (o - 0.5), -1 + 1e-3, 1 - 1e-3)
@@ -414,33 +410,6 @@ class Trainer:
             print("\n#######################"
                   "\nPlanning")
             #############################################
-            # # Showing plans on real images using Q.
-            # # Q is accurate on fake, but collapses on real images.
-            # planning_dataloader = zip(data_start_loader, data_goal_loader)
-            # for i, pair in enumerate(planning_dataloader, 0):
-            #     if self.fcn:
-            #         start_obs = self.apply_fcn_mse(pair[0][0])
-            #         goal_obs = self.apply_fcn_mse(pair[1][0])
-            #
-            #     c_start = self.Q.forward_hard(self.FE(start_obs)).repeat(self.traj_eval_copies, 1)
-            #     c_goal = self.Q.forward_hard(self.FE(goal_obs)).repeat(self.traj_eval_copies, 1)
-            #     rollout = self.plan(c_start, c_goal)
-            #     # rollout = []
-            #     rollout.insert(0, start_obs.repeat(self.traj_eval_copies, 1, 1, 1))
-            #     rollout.append(goal_obs.repeat(self.traj_eval_copies, 1, 1, 1))
-            #
-            #     rollout_best_k, confidences = self.get_best_k(rollout, keep_best)
-            #     rollout_data = torch.stack(rollout_best_k, dim=0)
-            #
-            #     masks = - np.ones((rollout_data.size()[0], keep_best, self.channel_dim, 64, 64),
-            #                     dtype=np.float32)
-            #     write_number_on_images(masks, confidences)
-            #
-            #     save_image(torch.max(rollout_data, from_numpy_to_var(masks)).view(-1, self.channel_dim, 64, 64).data,
-            #                os.path.join(self.out_dir, 'plans', 'rollout_Q_%d_epoch_%d.png' % (i, epoch)),
-            #                nrow=keep_best,
-            #                normalize=True)
-            #############################################
             # Showing plans on real images using best code.
             # Min l2 distance from start and goal real images.
             self.plan_hack(data_start_loader,
@@ -453,37 +422,27 @@ class Trainer:
                            data_goal_loader,
                            epoch,
                            'classifier')
-            #############################################
-            # # Showing plans on generated images using random code.
-            # c_start = self.eval_c[:self.con_c_dim]
-            # c_goal = self.eval_c[1:self.con_c_dim+1]
-            # rollout = self.plan(c_start, c_goal)
-            # save_image(torch.cat(rollout, dim=0).data,
-            #            os.path.join(self.out_dir, 'plans', 'fake_epoch_%d.png' % epoch),
-            #            nrow=self.con_c_dim,
-            #            normalize=True)
-            #############################################
-            # # Showing plans on generated images using Q
-            # o_start = rollout[0]
-            # o_goal = rollout[-1]
-            # c_start = self.Q.forward_hard(self.FE(o_start))
-            # c_goal = self.Q.forward_hard(self.FE(o_goal))
-            # rollout = self.plan(c_start, c_goal)
-            # rollout.insert(0, o_start)
-            # rollout.append(o_goal)
-            # save_image(torch.cat(rollout, dim=0).data,
-            #            os.path.join(self.out_dir, 'plans', 'fake_Q_epoch_%d.png' % epoch),
-            #            nrow=self.con_c_dim,
-            #            normalize=True)
-            # # if epoch % 5 == 0:
-            # #     import ipdb; ipdb.set_trace()
-
+    #############################################
+    # Visual Planning
     def plan_hack(self,
                   data_start_loader,
                   data_goal_loader,
                   epoch,
                   metric,
                   keep_best=10):
+        """
+        Generate visual plans from starts to goals.
+        First, find the closest codes for starts and goals.
+        Then, generate the plans in the latent space.
+        Finally, map the latent plans to visual plans and use the classifier to pick the top K.
+        The start image is fixed. The goal image is loaded from data_goal_loader.
+        :param data_start_loader:
+        :param data_goal_loader:
+        :param epoch:
+        :param metric:
+        :param keep_best:
+        :return:
+        """
         all_confidences = []
         c_start = None
         est_start_obs = None
@@ -582,6 +541,19 @@ class Trainer:
              epoch,
              metric,
              keep_best=10):
+        """
+        Generate visual plans from starts to goals.
+        First, find the closest codes for starts and goals.
+        Then, generate the plans in the latent space.
+        Finally, map the latent plans to visual plans and use the classifier to pick the top K.
+        The start image is loaded from data_start_loader. The goal image is loaded from data_goal_loader.
+        :param data_start_loader:
+        :param data_goal_loader:
+        :param epoch:
+        :param metric:
+        :param keep_best:
+        :return:
+        """
         planning_dataloader = zip(data_start_loader, data_goal_loader)
         for i, pair in enumerate(planning_dataloader, 0):
             if self.fcn:
@@ -669,7 +641,7 @@ class Trainer:
 
     def closest_code(self, obs, n_trials, use_second, metric, regress_bs, verbose=True):
         """
-        Get the code that generate the closest distance.
+        Get the code that generates an image with closest distance to obs.
         :param obs: 1 x channel_dim x img_W x img_H
         :param n_trials: number of copies to search
         :param use_second: bool, to measure distance using the second image
@@ -745,7 +717,7 @@ class Trainer:
 
     def simple_plan(self, c_start, c_goal, verbose=True, **kwargs):
         """
-        Generate a plan in observation space given start and goal states.
+        Generate a plan in observation space given start and goal states via interpolation.
         :param c_start: bs x c_dim
         :param c_goal: bs x c_dim
         :return: rollout: horizon x bs x channel_dim x img_W x img_H
@@ -771,6 +743,12 @@ class Trainer:
         return rollout
 
     def astar_plan(self, c_start, c_goal, verbose=True, **kwargs):
+        """
+        Generate a plan in observation space given start and goal states via A* search.
+        :param c_start: bs x c_dim
+        :param c_goal: bs x c_dim
+        :return: rollout: horizon x bs x channel_dim x img_W x img_H
+        """
         with torch.no_grad():
             rollout = []
             # _z = Variable(torch.randn(c_start.size()[0], self.rand_z_dim)).cuda()
