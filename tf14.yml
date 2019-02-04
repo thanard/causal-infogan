@@ -145,7 +145,7 @@ dependencies:
   - flatbuffers==2015.12.22.1
   - funcsigs==1.0.2
   - glfw==1.4.0
-  - gym (/home/thanard/anaconda3/envs/tf14/lib/python3.5/site-packages)==0.8.0
+  - gym==0.8.0
   - html5lib==0.9999999
   - imageio==2.2.0
   - ipdb==0.10.3
@@ -155,7 +155,7 @@ dependencies:
   - jupyter-client==4.4.0
   - jupyter-core==4.2.0
   - keras==2.0.8
-  - lasagne==0.2.dev1
+  - lasagne==0.1
   - markdown==2.6.11
   - ml-logger==0.0.23
   - moleskin==1.5.1
@@ -192,8 +192,8 @@ dependencies:
   - tensorflow-tensorboard==0.4.0rc3
   - termcolor==1.1.0
   - tf-logger==1.0.2
-  - theano==0.9.0.dev1
-  - torch==0.4.0a0+67494ce
+  - theano==0.9.0
+  - torch==0.4.0
   - torch-helpers==0.4.3
   - torchfile==0.1.0
   - torchvision==0.2.0
