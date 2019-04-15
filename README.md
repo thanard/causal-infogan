@@ -8,10 +8,6 @@ In this repo, we provide the code to imagine rope manipulation from random explo
 
 ## Setup
 **1) Datasets**
-<--!
-Removing img_skipped_%d.pkl
-10xovkLQ09BDvhtpD_nqXWFX-rlNzMVl9
--->
 - Download rope dataset [2] ([rope_full](https://drive.google.com/uc?export=download&confirm=ypZ7&id=1nJW1hlYS703nye1DhAwz9tqN07V2-Yqx))
 - Download test start and goal images ([seq_data_2](https://drive.google.com/file/d/1n8Yw1fQ2tzvWMWYvTpzzNANWgUVI5Vsl/view?usp=sharing))
 - Download the parameters of a fully connected network that is trained to extract the rope from the background ([FCN_mse](https://drive.google.com/file/d/1VGV_QYh24mQH-XVnJYuXRnijWPdu2ojD/view?usp=sharing))
