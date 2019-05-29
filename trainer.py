@@ -515,9 +515,7 @@ class Trainer:
             #                         % (self.planner.__name__, metric, i, epoch)),
             #            nrow=keep_best,
             #            normalize=True)
-
-            pd = torch.max(rollout_data, from_numpy_to_var(masks)).t().contiguous().view(-1, self.channel_dim,
-                                                                                         64, 64)
+            pd = torch.max(rollout_data, from_numpy_to_var(masks)).permute(1, 0, 2, 3, 4).contiguous().view(-1, self.channel_dim, 64, 64)
             # confidences.T has size keep_best x rollout length
             all_confidences.append(confidences.T[-1][:-1])
 
@@ -610,7 +608,7 @@ class Trainer:
             #            nrow=keep_best,
             #            normalize=True)
 
-            pd = torch.max(rollout_data, from_numpy_to_var(masks)).t().contiguous().view(-1, self.channel_dim, 64, 64)
+            pd = torch.max(rollout_data, from_numpy_to_var(masks)).permute(1, 0, 2, 3, 4).contiguous().view(-1, self.channel_dim, 64, 64)
 
             save_image(pd.data,
                        os.path.join(self.out_dir, 'plans', '%s_min_%s_%d_epoch_%d.png'
@@ -710,8 +708,8 @@ class Trainer:
         min_dist, min_idx = dist.min(0)
         if verbose:
             # import ipdb; ipdb.set_trace()
-            print("\t best_c: %s" % print_array(c[min_idx.data[0]].data))
-            print("\t best_c_next: %s" % print_array(c_next[min_idx.data[0]].data))
+            print("\t best_c: %s" % print_array(c[min_idx.item()].data))
+            print("\t best_c_next: %s" % print_array(c_next[min_idx.item()].data))
             print('\t %s measure: %.3f' % (metric, min_dist))
         return _z[min_idx].detach(), c[min_idx].detach(), c_next[min_idx].detach(), out[min_idx].detach()
 
