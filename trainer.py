@@ -97,7 +97,7 @@ class Trainer:
         self.eval_c = c
         z = Variable(torch.FloatTensor(self.test_sample_size, self.rand_z_dim).normal_(0, 1).cuda())
 
-        plot_img(c.t().data,
+        plot_img(c.t().detach().cpu(),
                  os.path.join(self.out_dir, 'gen', 'eval_code.png'),
                  vrange=self.P.unif_range)
         return z[:, None, :].repeat(1, self.test_num_codes, 1).view(-1, self.rand_z_dim), \
@@ -105,7 +105,7 @@ class Trainer:
 
     def get_c_next(self, epoch):
         c_next = self.T(self.eval_c)
-        plot_img(c_next.t().data,
+        plot_img(c_next.t().detach().cpu(),
                  os.path.join(self.out_dir, 'gen', 'eval_code_next_%d.png' % epoch),
                  vrange=self.P.unif_range)
         return c_next.repeat(1, 1, self.test_sample_size).permute(2, 0, 1).contiguous().view(-1, self.c_dim)
@@ -285,16 +285,16 @@ class Trainer:
                 #############################################
                 # Logging (iteration)
                 if num_iters % 100 == 0:
-                    self.log_dict['Dloss'] = D_loss.data[0]
-                    self.log_dict['Gloss'] = G_loss.data[0]
-                    self.log_dict['Qloss'] = Q_loss.data[0]
-                    self.log_dict['Tloss'] = T_loss.data[0]
-                    self.log_dict['mi_loss'] = mi_loss.data[0]
-                    self.log_dict['mi_loss_next'] = mi_loss_next.data[0]
-                    self.log_dict['ent_loss'] = ent_loss.data[0]
-                    self.log_dict['ent_loss_next'] = ent_loss_next.data[0]
-                    self.log_dict['crossent_loss'] = crossent_loss.data[0]
-                    self.log_dict['crossent_loss_next'] = crossent_loss_next.data[0]
+                    self.log_dict['Dloss'] = D_loss.item()
+                    self.log_dict['Gloss'] = G_loss.item()
+                    self.log_dict['Qloss'] = Q_loss.item()
+                    self.log_dict['Tloss'] = T_loss.item()
+                    self.log_dict['mi_loss'] = mi_loss.item()
+                    self.log_dict['mi_loss_next'] = mi_loss_next.item()
+                    self.log_dict['ent_loss'] = ent_loss.item()
+                    self.log_dict['ent_loss_next'] = ent_loss_next.item()
+                    self.log_dict['crossent_loss'] = crossent_loss.item()
+                    self.log_dict['crossent_loss_next'] = crossent_loss_next.item()
                     self.log_dict['D(real)'] = probs_real.data.mean()
                     self.log_dict['D(fake)_before'] = probs_fake.data.mean()
                     self.log_dict['D(fake)_after'] = probs_fake_2.data.mean()
@@ -327,17 +327,17 @@ class Trainer:
                           '\nt_diff_abs_mean: %.3f'
                           '\nt_std_mean: %.3f'
                           % (epoch, num_iters,
-                             D_loss.data[0],
-                             G_loss.data[0],
-                             mi_loss.data[0], mi_loss_next.data[0],
-                             T_loss.data[0],
-                             ent_loss.data[0], ent_loss_next.data[0],
-                             crossent_loss.data[0], crossent_loss_next.data[0],
+                             D_loss.item(),
+                             G_loss.item(),
+                             mi_loss.item(), mi_loss_next.item(),
+                             T_loss.item(),
+                             ent_loss.item(), ent_loss_next.item(),
+                             crossent_loss.item(), crossent_loss_next.item(),
                              probs_real.data.mean(),
                              probs_fake.data.mean(), probs_fake_2.data.mean(),
-                             Q_c_given_x[:, 0].data.mean(),
-                             Q_c_given_x[:, 0].data.std(),
-                             np.sqrt(Q_c_given_x_var[:, 0].data.mean()),
+                             Q_c_given_x[:, 0].cpu().numpy().mean(),
+                             Q_c_given_x[:, 0].cpu().numpy().std(),
+                             np.sqrt(Q_c_given_x_var[:, 0].cpu().numpy().mean()),
                              t_diff.data.abs().mean(),
                              t_variance.data.sqrt().mean(),
                              ))
@@ -450,7 +450,7 @@ class Trainer:
             if self.fcn:
                 start_obs = self.apply_fcn_mse(img[0])
             else:
-                start_obs = img[0]
+                start_obs = Variable(img[0]).cuda()
             pt_start = os.path.join(self.out_dir, 'plans', 'c_min_start_%s.pt' % metric)
             if os.path.exists(pt_start):
                 z_start, c_start, _, est_start_obs = torch.load(pt_start)
@@ -472,7 +472,7 @@ class Trainer:
             if self.fcn:
                 goal_obs = self.apply_fcn_mse(img[0])
             else:
-                goal_obs = img[0]
+                goal_obs = Variable(img[0]).cuda()
             pt_goal = os.path.join(self.out_dir, 'plans', 'c_min_goal_%s_%d_epoch_%d.pt' % (metric, i, epoch))
             if os.path.exists(pt_goal):
                 z_goal, _, c_goal, est_goal_obs = torch.load(pt_goal)

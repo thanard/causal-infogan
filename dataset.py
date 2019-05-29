@@ -81,7 +81,7 @@ def make_pair(imgs, resets, k, get_img, root):
     if k < 0:
         return list(zip(imgs, np.random.permutation(imgs)))
 
-    filename = os.path.join(root, 'imgs_skipped_%d.pkl' % k)
+    filename = 'imgs_skipped_%d.pkl' % k
     if os.path.exists(filename):
         with open(filename, 'rb') as f:
             return pkl.load(f)

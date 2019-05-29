@@ -17,7 +17,7 @@ In this repo, we provide the code to imagine rope manipulation from random explo
 - Activate the environment: `source activate tf14`
 
 **3) Run the training**
-- Run `python main.py -learn_var -seed 2`
+- Run `python main.py -learn_var -seed 1`
 
 ![cigan_result](https://github.com/thanard/causal-infogan/blob/master/causal_infogan.png)
 
